@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "duckson"
+version = "0.1.0"
+description = "Open Duck Mini Project"
+requires-python = ">=3.10"
+dependencies = [
+    "mujoco",
+    "pyserial",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/base",
+    "src/sim",
+    "src/real",
+    "src/utils"
+]
