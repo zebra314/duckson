@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "Open Duck Mini Project"
 requires-python = ">=3.10"
 dependencies = [
-    "mujoco",
+    "torch",
+    "genesis-world",
     "pyserial",
 ]
 

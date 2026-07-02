@@ -1,30 +1,34 @@
-import time
-from pathlib import Path
-import mujoco
-import mujoco.viewer
+import genesis as gs
+import torch
+
+from sim.duckson import Duckson
+
 
 def main():
-    project_root = Path(__file__).parent.parent
+    gs.init(backend=gs.cpu)
 
-    model_path = project_root / "src" / "sim" / "xmls" / "scene_flat_terrain.xml"
+    scene = gs.Scene(show_viewer=True)
+    scene.add_entity(gs.morphs.Plane())
 
-    model = mujoco.MjModel.from_xml_path(str(model_path))
-    data = mujoco.MjData(model)
+    duckson = Duckson()
+    duckson.build_entity(scene)
 
-    mujoco.mj_forward(model, data)
+    scene.build(n_envs=4, env_spacing=(1.0, 1.0))
 
-    with mujoco.viewer.launch_passive(model, data) as viewer:
-        viewer.cam.distance = 1.2
-        viewer.cam.lookat = [0.0, 0.0, 0.15]
+    LEFT_KNEE_IDX = 5
+    RIGHT_KNEE_IDX = 10
 
-        while viewer.is_running():
-            step_start = time.time()
-            mujoco.mj_step(model, data)
-            viewer.sync()
+    for i in range(1000):
+        t = i * 0.01
 
-            time_until_next_step = model.opt.timestep - (time.time() - step_start)
-            if time_until_next_step > 0:
-                time.sleep(time_until_next_step)
+        actions = torch.zeros((4, 14), device=gs.device)
+
+        actions[0, LEFT_KNEE_IDX] = torch.sin(torch.tensor(t * 10.0)) * 0.5
+        actions[0, RIGHT_KNEE_IDX] = torch.sin(torch.tensor(t * 10.0)) * 0.5
+
+        duckson.apply_actions(actions)
+
+        scene.step()
 
 if __name__ == "__main__":
     main()
