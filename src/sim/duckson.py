@@ -15,8 +15,8 @@ class Duckson(Robot):
         sim_root = Path(__file__).parent
         self.model_path = sim_root / "xmls" / "open_duck_mini_v2.xml"
 
-        self.entity = None
-        self.motor_dof_indices = None
+        self.num_envs = 3
+        self.env_spacing = (1.0, 1.0)
 
         self.motor_names = [
             "left_hip_yaw",
@@ -35,8 +35,9 @@ class Duckson(Robot):
             "head_roll",
         ]
         self.num_motors = len(self.motor_names)
-        self.motor_dof_indices = None
 
+        self.entity = None
+        self.motor_dof_indices = None
 
     def build_entity(self, scene):
         # Add entity
@@ -50,7 +51,7 @@ class Duckson(Robot):
             device=gs.device,
         )
 
-        scene.build(n_envs=3, env_spacing=(1.0, 1.0))
+        scene.build(n_envs=self.num_envs, env_spacing=self.env_spacing)
 
     def set_dof_properties(self):
         self.entity.set_dofs_kp(
@@ -84,11 +85,9 @@ class Duckson(Robot):
         actions[0, 5] = torch.sin(torch.tensor(t * 10.0)) * 0.5
         actions[0, 10] = torch.sin(torch.tensor(t * 10.0)) * 0.5
 
-        self.apply_actions(actions)
 
-    def apply_actions(self, actions_tensor):
         self.entity.control_dofs_position(
-            actions_tensor, self.motor_dof_indices
+            actions, self.motor_dof_indices
         )
 
     def print_robot_info(self):
