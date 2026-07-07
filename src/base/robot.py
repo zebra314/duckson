@@ -1,18 +1,22 @@
+import json
+
+
 class Robot:
     def __init__(self):
-        self.entity = None
-        self.motor_dof_indices = None
+        pass
 
-    def build_entity(self, scene):
-        raise NotImplementedError("Subclasses must implement the build() method.")
+    def get_command(self, command):
+        command = self.parse_command(command)
+        self.apply_command(command)
 
-    def apply_actions(self, actions_tensor):
-        self.entity.control_dofs_position(
-            actions_tensor, self.motor_dof_indices
-        )
+    def parse_command(self, command: str) -> list:
+        try:
+            command = json.loads(command)
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] JSONDecodeError: {e} | Raw input: {command}")
+            return []
 
-    def print_robot_info(self):
-        if self.entity is None:
-            raise ValueError("Entity is not built yet. Please call build() first.")
+        return command
 
-        print(self.entity.joints)
+    def apply_command(self, command: list):
+        raise NotImplementedError("Subclasses must implement this method.")

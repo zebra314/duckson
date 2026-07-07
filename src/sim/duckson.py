@@ -15,6 +15,9 @@ class Duckson(Robot):
         sim_root = Path(__file__).parent
         self.model_path = sim_root / "xmls" / "open_duck_mini_v2.xml"
 
+        self.entity = None
+        self.motor_dof_indices = None
+
         self.motor_names = [
             "left_hip_yaw",
             "left_hip_roll",
@@ -34,6 +37,7 @@ class Duckson(Robot):
         self.num_motors = len(self.motor_names)
         self.motor_dof_indices = None
 
+
     def build_entity(self, scene):
         # Add entity
         morph = gs.morphs.MJCF(file=self.model_path)
@@ -45,6 +49,8 @@ class Duckson(Robot):
             [all_dof_names.index(name) for name in self.motor_names],
             device=gs.device,
         )
+
+        scene.build(n_envs=3, env_spacing=(1.0, 1.0))
 
     def set_dof_properties(self):
         self.entity.set_dofs_kp(
@@ -65,3 +71,28 @@ class Duckson(Robot):
             dofs_idx_local=self.motor_dof_indices,
         )
 
+    def apply_command(self, command: list):
+        cmd = command[0]
+
+        action = cmd.get("action")
+        params = cmd.get("params")
+
+        t = params.get("t")
+
+        actions = torch.zeros((3, 14), device=gs.device)
+
+        actions[0, 5] = torch.sin(torch.tensor(t * 10.0)) * 0.5
+        actions[0, 10] = torch.sin(torch.tensor(t * 10.0)) * 0.5
+
+        self.apply_actions(actions)
+
+    def apply_actions(self, actions_tensor):
+        self.entity.control_dofs_position(
+            actions_tensor, self.motor_dof_indices
+        )
+
+    def print_robot_info(self):
+        if self.entity is None:
+            raise ValueError("Entity is not built yet. Please call build() first.")
+
+        print(self.entity.joints)
