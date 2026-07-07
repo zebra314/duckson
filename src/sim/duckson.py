@@ -79,12 +79,10 @@ class Duckson(Robot):
         params = cmd.get("params")
 
         t = params.get("t")
-
-        actions = torch.zeros((3, 14), device=gs.device)
+        actions = torch.zeros((self.num_envs, self.num_motors), device=gs.device)
 
         actions[0, 5] = torch.sin(torch.tensor(t * 10.0)) * 0.5
         actions[0, 10] = torch.sin(torch.tensor(t * 10.0)) * 0.5
-
 
         self.entity.control_dofs_position(
             actions, self.motor_dof_indices

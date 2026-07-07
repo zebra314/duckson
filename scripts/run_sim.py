@@ -12,10 +12,13 @@ def main():
     duckson = Duckson()
     duckson.build_entity(scene)
 
-    for i in range(1000):
-        t = i * 0.01
+    while True:
+        t = scene.t
 
-        command = f'[{{"action": "test_case", "params": {{"t": {t:.2f}}}}}]'
+        command = f"""[
+            {{"action": "test", "params": {{"t": {t:.2f}}}}}
+        ]"""
+
         duckson.get_command(command)
 
         scene.step()
